@@ -114,7 +114,18 @@
 		.intersection.c7:hover div { background-image: linear-gradient(135deg, var(--p7) 60%, var(--cc) 60%); opacity: 100%; }
 		.intersection.c8:hover div { background-image: linear-gradient(135deg, var(--p8) 60%, var(--cc) 60%); opacity: 100%; }
 		.intersection.c9:hover div { background-image: linear-gradient(135deg, var(--p9) 60%, var(--cc) 60%); opacity: 100%; }
-		
+
+    .intersection.marked div::after {
+      background-color: #dbdbdb;
+      width: 30%;
+      height: 30%;
+      position: relative;
+      content: "";
+      top: 35%;
+      left: 35%;
+      mix-blend-mode: difference;
+      display: block;
+    }
 
 		#gridcontainer {
 			position: absolute;
@@ -242,6 +253,7 @@
 		
 		var mouseDown = 0;
 		var shifted;
+		var marking = 0;
 		
 		var nametagroot = "Placing stones as: ";
 		var nametagempty = "Removing stones";
@@ -339,7 +351,7 @@
 			
 			var buttons = document.createElement('div');
 			buttons.id = "buttons";
-			for (i = 1; i < 13; i++) {
+			for (i = 1; i < 14; i++) {
 				var b = document.createElement('div');
 				b.classList.add("button");
 				b.id = "b" + i;
@@ -357,11 +369,14 @@
 						
 						b.onclick = function() { toggleShift(1); };
 						b.innerHTML = '⇧';
-					} else {
-						
-						b.onclick = function() { openLink(); };
+					} else if (i == 12) {
+
+						b.onclick = function () { openLink(); };
 						b.innerHTML = 'link';
-					}
+          } else {
+            b.onclick = function () { toggleMarking(); };
+            b.innerHTML = '□';
+          }
 				}
 				buttons.appendChild(b);
 			}
@@ -393,7 +408,12 @@
 		
 		function changeStone(i,j,c) {
 			if (mouseDown == 1 || c == 1) {
-				var e = board[i][j];
+        var e = board[i][j];
+        if (marking) {
+          if (e.classList.contains("marked")) e.classList.remove("marked")
+          else e.classList.add("marked");
+          return;
+        }
 				if (currentcolor != 0 && (mouseDown == 1 || !e.classList.contains("c" + currentcolor))) {
 					if (shifted) {
 						e.classList.add("c" + currentcolor);
@@ -427,6 +447,17 @@
 				document.getElementById('container').classList.remove("shifted");
 			}
 		}
+
+		function toggleMarking() {
+      document.documentElement.style.setProperty('--o' + currentcolor, '50%');
+      marking = 1 - marking;
+
+      document.getElementsByClassName('selected')[0]?.classList.remove('selected');
+      if (marking) {
+        document.getElementById('b13').classList.add("selected");
+        document.documentElement.style.setProperty('--cc', 'var(--p0)');
+      }
+    }
 		
 		document.addEventListener('keydown', keypressed);
 		document.addEventListener('keyup', function(e){ shifted = e.shiftKey; toggleShift(0); });
@@ -482,6 +513,7 @@
 			var sel = document.getElementsByClassName('selected')[0];
 			sel.classList.remove('selected');
 			document.getElementById('b' + (c == 0 ? 10 : c)).classList.add('selected');
+			marking = 0;
 		}
 	</script>
 </head>
